@@ -9,7 +9,7 @@ require "spec_helper"
 
 describe Role do
   describe "exclusive membership roles (hitobito/hitobito_dpsg#26)" do
-    let(:person) { people(:member) }
+    let(:person) { Fabricate(:person) }
     let(:adler_mitglieder) { groups(:adler_mitglieder) } # layer: adler
     let(:biber_mitglieder) { groups(:biber_mitglieder) } # layer: biber
 
