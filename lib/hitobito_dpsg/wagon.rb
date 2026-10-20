@@ -42,6 +42,11 @@ module HitobitoDpsg
         layer_group.used_attributes += [:strukturnummer]
       end
 
+      Wagon.configure_exclusive_membership_roles
+      Wagon.configure_prerequisite_roles
+    end
+
+    def self.configure_exclusive_membership_roles
       # Eine Person kann zu jedem Zeitpunkt nur eine Ordentliche- oder Fördermitgliedschaft haben.
       [Group::Mitglieder::OrdentlicheMitgliedschaft,
         Group::Mitglieder::Foerdermitgliedschaft].each do |membership_role|
@@ -56,6 +61,26 @@ module HitobitoDpsg
         Group::Mitglieder::Zweitmitgliedschaft].each do |membership_role|
         membership_role.mutually_exclusive_in :membership_stamm, scope: :layer
       end
+    end
+
+    def self.configure_prerequisite_roles
+      # Eine Mitgliedschaft im Stamm ist Voraussetzung für Stufenrollen im selben Stamm. Endet
+      # sie, werden die Stufenrollen gekürzt.
+      [Group::Mitglieder::OrdentlicheMitgliedschaft,
+        Group::Mitglieder::Foerdermitgliedschaft,
+        Group::Mitglieder::Zweitmitgliedschaft].each do |membership_role|
+        membership_role.provides_role :stamm_mitgliedschaft
+      end
+      Group::StammGruppePfadfinder::Mitglied
+        .depends_on_role :stamm_mitgliedschaft, scope: :layer, on_uncovered: :cascade
+
+      # Eine Zweitmitgliedschaft setzt eine Ordentliche- oder Fördermitgliedschaft voraus.
+      [Group::Mitglieder::OrdentlicheMitgliedschaft,
+        Group::Mitglieder::Foerdermitgliedschaft].each do |membership_role|
+        membership_role.provides_role :dpsg_mitgliedschaft
+      end
+      Group::Mitglieder::Zweitmitgliedschaft
+        .depends_on_role :dpsg_mitgliedschaft, scope: :global, on_uncovered: :cascade
     end
 
     initializer "dpsg.add_settings" do |_app|

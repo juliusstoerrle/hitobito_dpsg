@@ -19,3 +19,11 @@ foerder_fee_kind:
   restricted: false
   lft: 3
   rgt: 4
+
+reduced_fee_kind:
+  name: Reduced Fee Kind
+  layer: root
+  role_type: Group::Mitglieder::OrdentlicheMitgliedschaft
+  restricted: false
+  lft: 5
+  rgt: 6
